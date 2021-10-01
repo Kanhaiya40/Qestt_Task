@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class colors {
 
-  static const Color primary = Color(0xffFE7E7B);
+  static const Color primary = Colors.teal;
   static const Color secondary = Color(0xffFDCD96);
 
   static const Color grad1Color = Color(0xffFFBD69);

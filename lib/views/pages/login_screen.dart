@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:http/http.dart';
+import 'package:questt/helper/Color.dart';
 import 'package:questt/helper/apis.dart';
 import 'package:questt/helper/session.dart';
 import 'package:questt/helper/string.dart';
@@ -36,7 +37,7 @@ class _LogInScreenState extends State<LogInScreen> {
     return Container(
       decoration: BoxDecoration(
           color: Colors.white,
-          border: Border.all(color: Colors.greenAccent),
+          border: Border.all(color: colors.primary),
           borderRadius: BorderRadius.circular(8)),
       child: TextFormField(
         onFieldSubmitted: (v) {
@@ -48,13 +49,12 @@ class _LogInScreenState extends State<LogInScreen> {
         focusNode: monoFocus,
         textInputAction: TextInputAction.next,
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-        validator: (val) => validateMob(val, 'Mobile Number Required',
-            'Mobile Number not be less than 10 digit'),
+        validator: (val) => validateMob(val, MOBILE_REQUIRED, MOBILE_LENGTH),
         onSaved: (String value) {
           mobile = value;
         },
         decoration: InputDecoration(
-          hintText: 'Enter Mobile Number here...',
+          hintText: MOBILE_QUOTE,
           border: InputBorder.none,
           hintStyle: Theme.of(this.context)
               .textTheme
@@ -155,7 +155,7 @@ class _LogInScreenState extends State<LogInScreen> {
                                           height: 50,
                                           decoration: BoxDecoration(
                                               border: Border.all(
-                                                color: Colors.greenAccent,
+                                                color: colors.primary,
                                               ),
                                               borderRadius:
                                                   BorderRadius.circular(8),
@@ -184,7 +184,7 @@ class _LogInScreenState extends State<LogInScreen> {
                               height: 40,
                               width: double.infinity,
                               decoration: BoxDecoration(
-                                  color: Colors.greenAccent.withOpacity(0.85),
+                                  color: colors.primary,
                                   borderRadius: BorderRadius.circular(10)),
                               child: Padding(
                                 padding: const EdgeInsets.all(8.0),
@@ -201,12 +201,11 @@ class _LogInScreenState extends State<LogInScreen> {
                         Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Text('Need Help? '),
+                              Text(NEED_HELP),
                               InkWell(
                                 child: Text(
-                                  'Click here',
-                                  style:
-                                      TextStyle(color: Colors.greenAccent[100]),
+                                  CLICK_HERE,
+                                  style: TextStyle(color: colors.primary),
                                 ),
                               )
                             ])
@@ -247,14 +246,12 @@ class _LogInScreenState extends State<LogInScreen> {
         textAlign: TextAlign.center,
         style: TextStyle(color: Colors.white),
       ),
-      backgroundColor: Colors.teal,
+      backgroundColor: colors.primary,
       elevation: 1.0,
     ));
   }
 
   Future<void> getVerifyUser() async {
-    debugPrint('Coming');
-    debugPrint('$mobile +  $countrycode');
     try {
       var data = {MOBILE: '917398608888', COUNTRY_CODE: countrycode, TNC: 1};
       Response response =
@@ -263,17 +260,10 @@ class _LogInScreenState extends State<LogInScreen> {
 
       var getdata = json.decode(response.body);
 
-      debugPrint('$getdata');
-
       int code = getdata["code"];
       String msg = getdata["message"];
-
-      debugPrint('$code +  $msg');
       if (code == 201) {
         setSnackbar(msg);
-
-        // setPrefrence(MOBILE, mobile);
-        // setPrefrence(COUNTRY_CODE, countrycode);
         Future.delayed(Duration(seconds: 1)).then((_) {
           Navigator.pushReplacement(
               context,
@@ -287,7 +277,7 @@ class _LogInScreenState extends State<LogInScreen> {
         setSnackbar(msg);
       }
     } on TimeoutException catch (_) {
-      setSnackbar("Something went wrong");
+      setSnackbar(WENT_WRONG);
     }
   }
 

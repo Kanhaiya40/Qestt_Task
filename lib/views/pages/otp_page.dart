@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
+import 'package:questt/helper/Color.dart';
 import 'package:questt/helper/apis.dart';
 import 'package:questt/helper/session.dart';
 import 'package:questt/helper/string.dart';
@@ -24,7 +25,7 @@ class OtpScreen extends StatefulWidget {
 class _OtpScreenState extends State<OtpScreen> with TickerProviderStateMixin {
   String otp;
   AnimationController controller;
-  bool _isNetworkAvail = true;
+  bool _isNetworkAvail;
 
   Duration get duration => controller.duration * controller.value;
 
@@ -36,16 +37,15 @@ class _OtpScreenState extends State<OtpScreen> with TickerProviderStateMixin {
       vsync: this,
       duration: Duration(seconds: 20),
     );
-
     controller.reverse(from: 1);
     super.initState();
   }
 
   @override
   void dispose() {
+    controller.dispose();
     // TODO: implement dispose
     super.dispose();
-    controller.dispose();
   }
 
   @override
@@ -63,7 +63,7 @@ class _OtpScreenState extends State<OtpScreen> with TickerProviderStateMixin {
                       height: 30,
                     ),
                     Text(
-                      'Enter OTP',
+                      ENTER_OTP,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                           color: Colors.black,
@@ -74,7 +74,7 @@ class _OtpScreenState extends State<OtpScreen> with TickerProviderStateMixin {
                       height: 10,
                     ),
                     Text(
-                      'please enter 5 digit OTP sent to',
+                      OTP_INSTRUCTION,
                       style: TextStyle(fontSize: 14, color: Colors.grey[700]),
                       textAlign: TextAlign.center,
                     ),
@@ -92,7 +92,7 @@ class _OtpScreenState extends State<OtpScreen> with TickerProviderStateMixin {
                         ),
                         Icon(
                           Icons.edit,
-                          color: Colors.greenAccent,
+                          color: colors.primary,
                           size: 15,
                         )
                       ],
@@ -119,9 +119,9 @@ class _OtpScreenState extends State<OtpScreen> with TickerProviderStateMixin {
                             controller.reverse(from: 1);
                           }),
                           child: Text(
-                            'Resend OTP',
+                            RESEND_OTP,
                             style: TextStyle(
-                              color: Colors.teal,
+                              color: colors.primary,
                             ),
                           ),
                         ),
@@ -146,7 +146,7 @@ class _OtpScreenState extends State<OtpScreen> with TickerProviderStateMixin {
                             padding: const EdgeInsets.all(10),
                             child: Center(
                                 child: Text(
-                              'Confirm & Verify',
+                              CONFIRM_AND_VERIFY,
                               style: TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold),
@@ -165,11 +165,11 @@ class _OtpScreenState extends State<OtpScreen> with TickerProviderStateMixin {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Text('Need Help? '),
+                  Text(NEED_HELP),
                   InkWell(
                     onTap: () {},
                     child: Text(
-                      'Click here',
+                      CLICK_HERE,
                       style: TextStyle(
                         color: Colors.teal,
                       ),
@@ -225,7 +225,7 @@ class _OtpScreenState extends State<OtpScreen> with TickerProviderStateMixin {
         setSnackbar(msg);
       }
     } on TimeoutException catch (_) {
-      setSnackbar("Something went wrong");
+      setSnackbar(WENT_WRONG);
     }
   }
 

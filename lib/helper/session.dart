@@ -7,7 +7,7 @@ String validateMob(String value, String msg1, String msg2) {
   if (value.isEmpty) {
     return msg1;
   }
-  if (value.length < 8) {
+  if (value.length < 10) {
     return msg2;
   }
   return null;

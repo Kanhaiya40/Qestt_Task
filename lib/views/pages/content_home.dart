@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:collection';
 import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
@@ -10,6 +9,7 @@ import 'package:questt/helper/session.dart';
 import 'package:questt/helper/string.dart';
 import 'package:questt/model/chapter_response.dart';
 import 'package:questt/model/subject_response.dart';
+import 'package:questt/model/subjet_prop.dart';
 
 class HomeContentPage extends StatefulWidget {
   const HomeContentPage({Key key}) : super(key: key);
@@ -24,19 +24,25 @@ class _HomeContentPageState extends State<HomeContentPage> {
   var getSubject;
   var getChapter;
   bool _isLoading = true;
-  var resultHashMap = HashMap<String, List<ChapterData>>();
+  List<Data> subjectData;
+  List<ChapterData> chapterData;
+
+  List<Subject> subjectList = [];
 
   void initState() {
     super.initState();
     getUserDetails();
-    getAllSubjectWithChapters()
-        .then((value) => {
-          if(this.mounted) {
-            this.setState(() {
+    getSubjectWiseData();
+    debugPrint('subjectList:$subjectList');
+  }
 
-            })
-          }
-    }).onError((error, stackTrace) => {});
+  void getSubjectWiseData() async {
+    await getAllSubjectWithChapters();
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   Future<void> getAllSubjectWithChapters() async {
@@ -53,55 +59,45 @@ class _HomeContentPageState extends State<HomeContentPage> {
 
         if (code == 200) {
           await Future.delayed(Duration(seconds: 3)).then((_) async {
-            SubjectData subjectData = SubjectData.fromJson(getdata);
-            subjectData.data.forEach((element) async {
-              getAllChapter(element.id).then((subjectData) => {
-                    if (subjectData != null)
-                      {
-                        resultHashMap.putIfAbsent(
-                            subjectData.subejct, () => subjectData.data)
-                      }
-                  });
-            });
+            SubjectData subjectWiseData = SubjectData.fromJson(getdata);
+            subjectData = await subjectWiseData.data;
+            for (Data eachSubject in subjectData) {
+              Response response =
+                  await get(getChapterApi(eachSubject.id), headers: data)
+                      .timeout(Duration(seconds: timeOut));
 
+              if (response.statusCode == 200) {
+                var getdata = json.decode(response.body);
+                int code = getdata["code"];
+                String msg = getdata["status"];
+
+                if (code == 200) {
+                  await Future.delayed(Duration(seconds: 3)).then((_) async {
+                    SubJectWiseChapter subJectWiseChapter =
+                        SubJectWiseChapter.fromJson(getdata);
+                    chapterData = subJectWiseChapter.data[0].data;
+                    setState(() {
+                      subjectList.add(Subject(
+                          name: subJectWiseChapter.data[0].subejct,
+                          data: chapterData));
+                      _isLoading = false;
+                    });
+                  });
+                }
+              }
+            }
+          });
+          if (mounted) {
             setState(() {
               _isLoading = false;
             });
-          });
+          }
         } else {
           setSnackbar(msg);
         }
       }
     } on TimeoutException catch (_) {
       setSnackbar('somethingMSg');
-    }
-  }
-
-  Future<SubJectData> getAllChapter(String id) async {
-    String upDatedtoken = await getPrefrence(TOKEN);
-    var data = {AUTH: 'bearer $upDatedtoken'};
-
-    try {
-      Response response = await get(getChapterApi(id), headers: data)
-          .timeout(Duration(seconds: timeOut));
-
-      if (response.statusCode == 200) {
-        var getdata = json.decode(response.body);
-        int code = getdata["code"];
-        String msg = getdata["status"];
-
-        if (code == 200) {
-          await Future.delayed(Duration(seconds: 3)).then((_) async {
-            SubJectWiseChapter subJectWiseChapter =
-                SubJectWiseChapter.fromJson(getdata);
-            return Future.value(subJectWiseChapter.data[0]);
-          });
-        } else {
-          return Future.error("Not able to load");
-        }
-      }
-    } on TimeoutException catch (_) {
-      return Future.error("Not able to load");
     }
   }
 
@@ -120,85 +116,32 @@ class _HomeContentPageState extends State<HomeContentPage> {
   @override
   Widget build(BuildContext context) {
     return _isLoading
-        ? Center(child: CircularProgressIndicator())
+        ? Center(
+            child: CircularProgressIndicator(),
+          )
         : Column(
             children: [
               Expanded(
                 child: ListView(
+                  physics: BouncingScrollPhysics(),
                   children: [
                     Padding(
-                      padding: EdgeInsets.all(15),
-                      child: Container(
-                        height: MediaQuery.of(context).size.height,
-                        width: MediaQuery.of(context).size.width,
-                        child: ListView.builder(
-                          shrinkWrap: true,
-                          physics: BouncingScrollPhysics(),
-                          itemCount: resultHashMap.length,
-                          itemBuilder: (context, index) {
-                            debugPrint("Build : ${resultHashMap.toString()}");
-                            var dataWithList =
-                                resultHashMap.entries.elementAt(index);
-                            return buildLayout(
-                                dataWithList.value, dataWithList.key);
-                          },
-                        ),
-                      ),
-                    ),
+                        padding: EdgeInsets.all(15),
+                        child: Container(
+                          height: MediaQuery.of(context).size.height,
+                          width: MediaQuery.of(context).size.width,
+                          child: ListView.builder(
+                              physics: BouncingScrollPhysics(),
+                              itemCount: subjectList.length,
+                              itemBuilder: (context, index) {
+                                return buildContentLayout(subjectList[index]);
+                              }),
+                        ))
                   ],
                 ),
               )
             ],
           );
-  }
-
-  Widget buildLayout(List<ChapterData> listOfChapterData, String subjectName) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.comment_outlined),
-              SizedBox(
-                width: 10,
-              ),
-              Text(subjectName)
-            ],
-          ),
-          SizedBox(
-            height: 20,
-          ),
-          getChaterLayout(context, listOfChapterData),
-        ],
-      ),
-    );
-  }
-
-  Widget buldChapterLayout(ChapterData cd) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 30),
-      child: Container(
-        decoration: BoxDecoration(
-            color: Colors.white, borderRadius: BorderRadius.circular(30)),
-        height: 200,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Image.network(
-              cd.photoUrl,
-              height: 100,
-              width: 100,
-              fit: BoxFit.cover,
-            ),
-            Text(cd.title)
-          ],
-        ),
-      ),
-    );
   }
 
   void getUserDetails() async {
@@ -210,17 +153,59 @@ class _HomeContentPageState extends State<HomeContentPage> {
     }
   }
 
-  getChaterLayout(BuildContext context, List<ChapterData> data) {
+  Widget buildContentLayout(Subject subjectList) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(Icons.comment),
+            SizedBox(
+              width: 10,
+            ),
+            Text(subjectList.name)
+          ],
+        ),
+        SizedBox(
+          height: 10,
+        ),
+        Container(
+          height: 200,
+          child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              physics: BouncingScrollPhysics(),
+              itemCount: subjectList.data.length,
+              itemBuilder: (context, index) {
+                return buildChapter(subjectList.data[index]);
+              }),
+        )
+      ],
+    );
+  }
+
+  Widget buildChapter(ChapterData data) {
     return Container(
+      margin: EdgeInsets.only(left: 15),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(30),
+      ),
       height: 200,
-      width: MediaQuery.of(context).size.width,
-      child: ListView.builder(
-          scrollDirection: Axis.horizontal,
-          physics: BouncingScrollPhysics(),
-          itemCount: data.length,
-          itemBuilder: (BuildContext context, int index) {
-            return buldChapterLayout(data[index]);
-          }),
+      width: 200,
+      child: Column(
+        children: [
+          Image.asset(
+            'assets/images/introimage_a.png',
+            height: 120,
+            width: 120,
+            fit: BoxFit.cover,
+          ),
+          SizedBox(
+            height: 10,
+          ),
+          Text(data.title)
+        ],
+      ),
     );
   }
 }

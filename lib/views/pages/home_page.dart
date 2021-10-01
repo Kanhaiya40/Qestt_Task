@@ -5,6 +5,7 @@ import 'package:questt/helper/string.dart';
 import 'package:questt/views/pages/groups.dart';
 import 'package:questt/views/pages/my_questt.dart';
 import 'package:questt/views/pages/profile.dart';
+import 'package:questt/views/widgets/logout_alert.dart';
 
 import 'content_home.dart';
 
@@ -138,6 +139,21 @@ class _HomePageState extends State<HomePage> {
                             //         builder: (context) => Notifications()));
                           },
                         ),
+                        IconButton(
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return alertDialog(context);
+                              },
+                            );
+                          },
+                          icon: Icon(
+                            Icons.power_settings_new,
+                            size: 20,
+                            color: Colors.grey,
+                          ),
+                        )
                       ],
                     )
                   ],

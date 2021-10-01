@@ -53,6 +53,11 @@ class Data {
       this.isPublic,
       this.studentActive});
 
+  @override
+  String toString() {
+    return 'Data{id: $id, name: $name, subjectImage: $subjectImage, isActive: $isActive, level: $level, isPublic: $isPublic, studentActive: $studentActive}';
+  }
+
   Data.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     name = json['name'];
