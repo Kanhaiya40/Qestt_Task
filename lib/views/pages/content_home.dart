@@ -36,6 +36,12 @@ class _HomeContentPageState extends State<HomeContentPage> {
     debugPrint('subjectList:$subjectList');
   }
 
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+  }
+
   void getSubjectWiseData() async {
     await getAllSubjectWithChapters();
     if (mounted) {
@@ -63,8 +69,8 @@ class _HomeContentPageState extends State<HomeContentPage> {
             subjectData = await subjectWiseData.data;
             for (Data eachSubject in subjectData) {
               Response response =
-                  await get(getChapterApi(eachSubject.id), headers: data)
-                      .timeout(Duration(seconds: timeOut));
+              await get(getChapterApi(eachSubject.id), headers: data)
+                  .timeout(Duration(seconds: timeOut));
 
               if (response.statusCode == 200) {
                 var getdata = json.decode(response.body);
@@ -74,30 +80,29 @@ class _HomeContentPageState extends State<HomeContentPage> {
                 if (code == 200) {
                   await Future.delayed(Duration(seconds: 3)).then((_) async {
                     SubJectWiseChapter subJectWiseChapter =
-                        SubJectWiseChapter.fromJson(getdata);
+                    SubJectWiseChapter.fromJson(getdata);
                     chapterData = subJectWiseChapter.data[0].data;
-                    setState(() {
-                      subjectList.add(Subject(
-                          name: subJectWiseChapter.data[0].subejct,
-                          data: chapterData));
-                      _isLoading = false;
-                    });
+
+                    subjectList.add(Subject(
+                        name: subJectWiseChapter.data[0].subejct,
+                        data: chapterData));
+
+                    if(mounted){
+                      setState(() {
+                        _isLoading = false;
+                      });
+                    }
                   });
                 }
               }
             }
           });
-          if (mounted) {
-            setState(() {
-              _isLoading = false;
-            });
-          }
         } else {
           setSnackbar(msg);
         }
       }
     } on TimeoutException catch (_) {
-      setSnackbar('somethingMSg');
+      setSnackbar(WENT_WRONG);
     }
   }
 
@@ -117,31 +122,37 @@ class _HomeContentPageState extends State<HomeContentPage> {
   Widget build(BuildContext context) {
     return _isLoading
         ? Center(
-            child: CircularProgressIndicator(),
-          )
+      child: CircularProgressIndicator(),
+    )
         : Column(
+      children: [
+        Expanded(
+          child: ListView(
+            physics: BouncingScrollPhysics(),
             children: [
-              Expanded(
-                child: ListView(
-                  physics: BouncingScrollPhysics(),
-                  children: [
-                    Padding(
-                        padding: EdgeInsets.all(15),
-                        child: Container(
-                          height: MediaQuery.of(context).size.height,
-                          width: MediaQuery.of(context).size.width,
-                          child: ListView.builder(
-                              physics: BouncingScrollPhysics(),
-                              itemCount: subjectList.length,
-                              itemBuilder: (context, index) {
-                                return buildContentLayout(subjectList[index]);
-                              }),
-                        ))
-                  ],
-                ),
-              )
+              Padding(
+                  padding: EdgeInsets.all(15),
+                  child: Container(
+                    height: MediaQuery
+                        .of(context)
+                        .size
+                        .height,
+                    width: MediaQuery
+                        .of(context)
+                        .size
+                        .width,
+                    child: ListView.builder(
+                        physics: BouncingScrollPhysics(),
+                        itemCount: subjectList.length,
+                        itemBuilder: (context, index) {
+                          return buildContentLayout(subjectList[index]);
+                        }),
+                  ))
             ],
-          );
+          ),
+        )
+      ],
+    );
   }
 
   void getUserDetails() async {

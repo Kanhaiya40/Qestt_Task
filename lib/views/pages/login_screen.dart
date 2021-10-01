@@ -265,13 +265,11 @@ class _LogInScreenState extends State<LogInScreen> {
       if (code == 201) {
         setSnackbar(msg);
         Future.delayed(Duration(seconds: 1)).then((_) {
-          Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => OtpScreen(
-                        mobile: mobile,
-                        countryCode: countrycode,
-                      )));
+          Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) => OtpScreen(
+                    mobile: mobile,
+                    countryCode: countrycode,
+                  )));
         });
       } else {
         setSnackbar(msg);

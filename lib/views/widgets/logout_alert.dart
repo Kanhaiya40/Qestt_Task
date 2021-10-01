@@ -40,7 +40,8 @@ Future<void> getVerifyUser(BuildContext context) async {
       setSnackbar(msg, context);
       Future.delayed(Duration(seconds: 1)).then((_) {
         setPrefrence(TOKEN, '');
-        Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+        Navigator.pushReplacement(context,
+            MaterialPageRoute(builder: (context) {
           return LogInScreen();
         }));
       });

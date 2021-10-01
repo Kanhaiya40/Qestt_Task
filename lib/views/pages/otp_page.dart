@@ -201,13 +201,10 @@ class _OtpScreenState extends State<OtpScreen> with TickerProviderStateMixin {
               .timeout(Duration(seconds: timeOut));
 
       var getdata = json.decode(response.body);
-
-      debugPrint('$getdata');
       int code = getdata["code"];
       String msg = getdata["status"];
 
       if (code == 200) {
-        debugPrint(getdata['data']['token']);
         setSnackbar(msg);
 
         UsersData usersData = UsersData.fromJson(getdata);
@@ -216,10 +213,10 @@ class _OtpScreenState extends State<OtpScreen> with TickerProviderStateMixin {
         Data usData = data.data;
 
         setPrefrence(TOKEN, logInData.token);
-        setPrefrence(USERNAME, usData.name);
+        setPrefrence(USERNAME, 'Kanhaiya');
         Future.delayed(Duration(seconds: 1)).then((_) {
-          Navigator.pushReplacement(
-              context, MaterialPageRoute(builder: (context) => HomePage()));
+          Navigator.of(context)
+              .push(MaterialPageRoute(builder: (context) => HomePage()));
         });
       } else {
         setSnackbar(msg);

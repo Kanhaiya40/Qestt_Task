@@ -95,7 +95,7 @@ class _HomePageState extends State<HomePage> {
                         SizedBox(
                           width: 10,
                         ),
-                        Text('Hi, $name'),
+                        Text('Hi, Kanhaiya'),
                       ],
                     ),
                     Row(
